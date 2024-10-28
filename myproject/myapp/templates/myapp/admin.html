@@ -1,0 +1,27 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'admin.css' %}">
+
+</head>
+<body>
+
+  <div id="admin-panel">
+    <h1>Admin Panel</h1>
+    <input type="file" id="file-input" accept=".pdf, .txt, .png, .jpeg, .jpg, .md" multiple />
+    <button id="upload-button">Upload File</button>
+
+    <div id="file-list">
+      <h3>Uploaded Files:</h3>
+    </div>
+
+    <button id="clear-button">Clear All Files</button>
+  </div>
+  <script src="{% static 'admin.js' %}"></script>
+  </body>
+</html>

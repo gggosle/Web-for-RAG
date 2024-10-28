@@ -1,0 +1,38 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Interface</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'chat.css' %}">
+  
+</head>
+<body>
+
+  <div id="chat-interface">
+    <div id="chat-list">
+      <h3>Chats</h3>
+      <button id="new-chat-button">+ New Chat</button>
+      <div id="chat-items">
+        <!-- Existing chats will appear here -->
+      </div>
+    </div>
+
+    <div id="chat-container">
+      <div id="chat-header">Chat Interface</div>
+      <div id="chat-messages">
+        <div class="message bot-message">Hello! How can I help you today?</div>
+      </div>
+
+      <div id="input-area">
+        <input type="text" id="message-input" placeholder="Type your message..." />
+        <button id="send-button">Send</button>
+        <button id="stop-button">Stop Generating</button>
+      </div>
+    </div>
+  </div>
+  <script src="{% static 'chat.js' %}"></script>
+  </body>
+</html>
