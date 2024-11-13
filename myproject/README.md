@@ -1,0 +1,1 @@
+Start the server using command: python manage.py runserver

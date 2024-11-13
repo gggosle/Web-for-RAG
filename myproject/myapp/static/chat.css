@@ -46,7 +46,7 @@ body {
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 5px;
-    margin-top: 10px; /* Older chats stay at the top */
+    margin-top: 10px; 
     cursor: pointer;
 }
 .chat-item:hover {
@@ -84,8 +84,8 @@ body {
     margin: 5px 0;
     border-radius: 5px;
     max-width: 80%;
-    display: block;  /* Ensures each message appears on a new line */
-    word-wrap: break-word; /* Prevents overflow of long words */
+    display: block;  
+    word-wrap: break-word; 
 }
 .user-message {
     background-color: #d1e7dd;

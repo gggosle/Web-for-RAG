@@ -6,83 +6,112 @@ const chatItems = document.getElementById("chat-items");
 const newChatButton = document.getElementById("new-chat-button");
 
 let isGenerating = false;
-let chatCounter = 1;
-let activeChatId = "chat-1";  // Default chat when the page loads
+let chatCounter = 0;
+let activeChatId = "chat-1"; 
 
 const chats = {
-    "chat-1": chatMessages.innerHTML  // Initial chat content
+    "chat-1": { user: [], bot: [] }  
 };
 
-// Function to add messages
 function addMessage(text, sender) {
+    const messageElement = createMessageElement(sender)
+
+    if (sender === "bot") {
+        chats[activeChatId].bot.push(text);
+        isGenerating = true;
+        let charIndex = 0;
+        const intervalId = setInterval(() => {
+            if (charIndex < text.length && isGenerating) {
+                messageElement.textContent += text[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(intervalId);
+                isGenerating = false;
+            }
+        }, 50);
+    } else {
+        messageElement.textContent = text;
+        chats[activeChatId].user.push(text);
+    }
+
+    scrollContainerToBottom();
+}
+
+function addStaticMessage(text, sender) {
+    const messageElement = createMessageElement(sender);
+
+    messageElement.textContent = text;
+    scrollContainerToBottom();
+}
+
+function createMessageElement(sender) {
     const messageElement = document.createElement("div");
     messageElement.classList.add("message", `${sender}-message`);
     messageElement.textContent = "";
     chatMessages.appendChild(messageElement);
 
-    if (sender === "bot") {
-    isGenerating = true;
-    let charIndex = 0;
-    const intervalId = setInterval(() => {
-        if (charIndex < text.length && isGenerating) {
-        messageElement.textContent += text[charIndex];
-        charIndex++;
-        } else {
-        clearInterval(intervalId);
-        isGenerating = false;
-        }
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 50);
-    } else {
-    messageElement.textContent = text;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    return messageElement;
 }
 
-// Save chat state
+function scrollContainerToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
 function saveChatState() {
     if (activeChatId) {
-    chats[activeChatId] = chatMessages.innerHTML;
+        localStorage.setItem(activeChatId, JSON.stringify(chats[activeChatId]));
     }
 }
 
-// Load chat state
 function loadChatState(chatId) {
-    chatMessages.innerHTML = chats[chatId] || "";
+    const chatData = JSON.parse(localStorage.getItem(chatId)) || { user: [], bot: [] };
+    if (!chatData || typeof chatData !== 'object') {
+        chatData = { user: [], bot: [] };
+    }
+    chatMessages.innerHTML = ""; 
+
+    const maxLength = Math.max(chatData.user.length, chatData.bot.length);
+    for (let i = 0; i < maxLength; i++) {
+        if (i < chatData.user.length) {
+            const text = chatData.user[i];
+            addStaticMessage(text, "user");
+            chats[activeChatId].user.push(text);
+        }
+        if (i < chatData.bot.length) {
+            const text = chatData.bot[i];
+            chats[activeChatId].bot.push(text);
+            addStaticMessage(text, "bot");
+        }
+    }
 }
 
-// Create a new chat
 newChatButton.addEventListener("click", () => {
+    addNewChat();
+});
+
+function addNewChat() {
     chatCounter++;
     const chatId = `chat-${chatCounter}`;
-
-    // Save current chat state
-    saveChatState();
-
-    // Create new chat item and append at the bottom
+    
     const chatItem = document.createElement("div");
     chatItem.classList.add("chat-item");
     chatItem.textContent = `Chat ${chatCounter}`;
     chatItem.dataset.chatId = chatId;
     chatItems.appendChild(chatItem);
 
-    // Switch to new chat
-    activeChatId = chatId;
-    chatMessages.innerHTML = "";
-    chats[chatId] = "";
-
+    chats[chatId] = { user: [], bot: [] };  
     chatItem.addEventListener("click", () => {
-    saveChatState();
-    activeChatId = chatId;
-    loadChatState(chatId);
+        activeChatId = chatId;
+        loadChatState(chatId);
     });
-});
+}
 
 
 sendButton.addEventListener("click", () => {
     const userMessage = messageInput.value.trim();
     if (userMessage) {
         addMessage(userMessage, "user"); 
+        saveChatState();
         messageInput.value = "";
 
         fetch('/api/chat_response/', {
@@ -95,21 +124,26 @@ sendButton.addEventListener("click", () => {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.response.content) {
-                let formattedMessage = data.response.content;
-                // let sources = data.response.sources
-                // formattedMessage += " Sources: " + sources.join(', ');
-                addMessage(formattedMessage, "bot");  
-            }
-            else {
-                addMessage(data.response, "bot")
-            }
+            let botResponse = data.response.content || data.response;
+            addMessage(botResponse, "bot");  
+            saveChatState();
         })
         .catch(error => {
             console.error('Error:', error);
         });
     }
 });
+
+window.onload = function() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.startsWith("chat-")) {
+            addNewChat();
+            loadChatState(key);
+        }
+    });
+    activeChatId = "chat-1";
+};
 
 // Function to get CSRF token (if using CSRF protection)
 function getCookie(name) {
@@ -118,7 +152,6 @@ function getCookie(name) {
         const cookies = document.cookie.split(';');
         for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            // Check if this cookie string begins with the name we want
             if (cookie.substring(0, name.length + 1) === (name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
@@ -129,25 +162,15 @@ function getCookie(name) {
 }
 
 
-// Stop bot from generating text
 stopButton.addEventListener("click", () => {
     isGenerating = false;
 });
 
-// Send message on Enter key press
 messageInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendButton.click();
 });
 
-// Initialize first chat item for default chat
-const initialChatItem = document.createElement("div");
-initialChatItem.classList.add("chat-item");
-initialChatItem.textContent = "Chat 1";
-initialChatItem.dataset.chatId = "chat-1";
-chatItems.appendChild(initialChatItem);
-
 initialChatItem.addEventListener("click", () => {
-    saveChatState();
     activeChatId = "chat-1";
     loadChatState("chat-1");
 });

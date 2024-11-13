@@ -1,7 +1,5 @@
 from django.shortcuts import render, HttpResponse
 from rest_framework import viewsets
-from .models import Item
-from .serializers import ItemSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -12,14 +10,6 @@ from django.conf import settings
 
 UPLOAD_DIR = os.path.join(settings.MEDIA_ROOT, 'uploads')
 
-
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
-
-def index(request):
-    items = Item.objects.all()  
-    return render(request, 'myapp/index.html', {'items': items})  
 
 def chat(request):
     return render(request, 'myapp/chat.html')  
