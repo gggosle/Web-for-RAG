@@ -55,10 +55,6 @@ function addFileToList(filename) {
   const fileName = document.createElement("span");
   fileName.textContent = filename;
 
-  const downloadLink = document.createElement("a");
-  downloadLink.textContent = "Download";
-  downloadLink.style.marginRight = "10px"; 
-
   const deleteButton = document.createElement("button");
   deleteButton.textContent = "Delete";
   deleteButton.classList.add("delete-button");
@@ -84,7 +80,6 @@ function addFileToList(filename) {
   };
 
   fileItem.appendChild(fileName);
-  fileItem.appendChild(downloadLink);
   fileItem.appendChild(deleteButton);
   fileList.appendChild(fileItem);
 }
@@ -104,8 +99,6 @@ clearButton.addEventListener("click", () => {
       alert(data.message); 
       while (fileList.children.length > 1) { 
         const fileItem = fileList.lastElementChild;
-        const downloadLink = fileItem.querySelector("a");
-        if (downloadLink) URL.revokeObjectURL(downloadLink.href); 
         fileItem.remove();
       }
       uploadedFiles.clear(); 
